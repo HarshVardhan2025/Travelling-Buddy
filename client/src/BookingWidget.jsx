@@ -35,33 +35,40 @@ export default function BookingWidget({ place }) {
 
   async function bookThisPlace() {
     if (!checkIn) {
-        alert("Please select a check-in date.");
-        return;
+      alert("Please select a check-in date.");
+      return;
     }
 
     try {
-        const response = await axios.post("/bookings", {
-            place: place.placeId, 
-            checkIn,
-            priceSelectedByUser
-        });
+      const response = await axios.post("/bookings", {
+        place: place._id, 
+        checkIn,
+        priceSelectedByUser,
+      });
 
-        if (response.data.bookingId) {
-            alert("You have been added to an existing booking with the same details.");
-            setRedirect(`/account/bookings/${response.data.bookingId}`);
-        }
+      console.log("🟢 Booking Response:", response.data);
+
+      if (response.data.message.includes("Booking created successfully")) {
+        alert("Booking successful!");
+      } else if (response.data.message.includes("You have been added")) {
+        alert("You have been added to an existing booking.");
+      }
+
+      setRedirect(`/account/bookings/${response.data.bookingId}`);
+
     } catch (error) {
-        if (error.response?.status === 409) {
-            const proceed = window.confirm("You have already booked this trip. Do you want to continue?");
-            if (proceed) {
-                setRedirect(`/account/bookings/${error.response.data.bookingId}`);
-            }
-        } else {
-            console.error("Booking failed", error);
-            alert("An error occurred while booking. Please try again.");
+      console.error("❌ Booking failed", error);
+
+      if (error.response?.status === 409) {
+        const proceed = window.confirm("You have already booked this trip. Do you want to view your booking?");
+        if (proceed) {
+          setRedirect(`/account/bookings/${error.response.data.bookingId}`);
         }
+      } else {
+        alert("An error occurred while booking. Please try again.");
+      }
     }
-}
+  }
 
   if (redirect) {
     return <Navigate to={redirect} />;

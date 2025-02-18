@@ -27,7 +27,7 @@ export default function RegisterPage() {
                 addressLine3,
                 profession,
                 age,
-                SocailMediaID: socialMediaID
+                socialMediaID: socialMediaID
             });
             alert('Registration Successful. Now you can log in');
         } catch (e) {

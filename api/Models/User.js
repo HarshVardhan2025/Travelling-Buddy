@@ -12,7 +12,7 @@ const UserSchema = new Schema({
     addressLine3: { type: String },
     profession: { type: String },
     age: { type: Number, min: 18 },
-    SocailMediaID: { type: String },
+    socialMediaID: { type: String },
     phone: { type: String, unique: true },
     personalityCategory: { type: Number },
     bookingIds: [{ type: String }]

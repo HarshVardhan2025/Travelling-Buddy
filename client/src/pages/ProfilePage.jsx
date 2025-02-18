@@ -20,7 +20,10 @@ export default function ProfilePage() {
     useEffect(() => {
         if (user?.email) {
             axios.get(`/user-info/${user.email}`)
-                .then(response => setUserInfo(response.data))
+                .then(response => {
+                    console.log("Fetched User Info: ", response.data);
+                    setUserInfo(response.data)
+                })
                 .catch(error => console.error("Error fetching user info:", error));
         }
     }, [user?.email]);
@@ -69,8 +72,8 @@ export default function ProfilePage() {
                             <p className="text-gray-500">{userInfo?.profession || "Profession"}</p>
                             <p className="text-gray-700">Age: {userInfo?.age || "--"} years</p>
                             <p className="text-blue-500">
-                                <a href={userInfo?.socialMedia || "#"} target="_blank" rel="noopener noreferrer">
-                                    Social Media
+                                <a href={userInfo?.socialMediaID || "#"} target="_blank" rel="noopener noreferrer">
+                                {userInfo?.socialMediaID ? "Social Media Profile" : "No Social Media Added"}
                                 </a>
                             </p>
                             <p className="text-gray-600">{userInfo?.email || "email@example.com"}</p>

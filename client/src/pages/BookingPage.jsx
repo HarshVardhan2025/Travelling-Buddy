@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import AddressLink from "../AddressLink";
@@ -109,17 +109,21 @@ export default function BookingPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {booking.users.length > 1 ? (
                     booking.users.map((user) => (
-                        <div key={user._id} className="bg-gray-100 p-4 rounded-lg shadow-md flex items-center gap-4">
+                        <Link 
+                            key={user._id} 
+                            to={`/user-profile/${user.email}`} 
+                            className="bg-gray-100 p-4 rounded-lg shadow-md flex items-center gap-4 hover:bg-gray-200 transition"
+                        >
                             <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-gray-600">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 21a8.25 8.25 0 0115 0" />
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-lg font-semibold">{user.name}</p>
+                                <p className="text-lg font-semibold text-blue-600 underline">{user.name}</p>
                                 <p className="text-gray-500">{user.email}</p>
                             </div>
-                        </div>
+                        </Link>
                     ))
                 ) : (
                     <p className="text-gray-500">No other travelers associated with this trip.</p>

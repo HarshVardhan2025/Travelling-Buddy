@@ -42,13 +42,13 @@ app.get('/test', (req, res) => {
 
 // 🟢 REGISTER
 app.post('/register', async (req, res) => {
-    const { name, email, password, phone, addressLine1, addressLine2, addressLine3, profession, age, SocailMediaID } = req.body;
+    const { name, email, password, phone, addressLine1, addressLine2, addressLine3, profession, age, socialMediaID } = req.body;
     try {
         const hashedPassword = bcrypt.hashSync(password, bcryptSalt);
         const userDoc = await User.create({
             name, email, password: hashedPassword, phone,
             addressLine1, addressLine2, addressLine3,
-            profession, age, SocailMediaID
+            profession, age, socialMediaID
         });
         console.log("✅ New User Registered - ID:", userDoc._id);
         res.json(userDoc);
@@ -96,20 +96,16 @@ app.get('/profile', async (req, res) => {
 app.get('/user-info/:email', async (req, res) => {
     try {
         const { email } = req.params;
-        // console.log("📢 Fetching User Info for Email:", email); 
 
-        // Find user by email
-        const user = await User.findOne({ email });
+        // ✅ Fetch socialMediaID along with other user details
+        const user = await User.findOne({ email }).select("name email age profession addressLine1 addressLine2 addressLine3 socialMediaID");
 
-        if (!user) {
-            // console.log("❌ User Not Found:", email);
-            return res.status(404).json({ error: "User not found" });
-        }
+        if (!user) return res.status(404).json({ error: "User not found" });
 
-        // console.log("✅ User Found:", user);
+        // console.log("✅ API Response:", user); // Debugging log
         res.json(user);
     } catch (err) {
-        // console.error("❌ Error fetching user info:", err);
+        console.error("❌ Error fetching user info:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });
@@ -179,26 +175,38 @@ app.post('/bookings', async (req, res) => {
         const userData = await getUserDataFromReq(req);
         const { place, checkIn, priceSelectedByUser } = req.body;
 
-        // Validate required fields
         if (!place || !checkIn || !priceSelectedByUser) {
             return res.status(400).json({ error: "Missing required fields." });
         }
 
-        // Find the place by placeId
-        const foundPlace = await Place.findOne({ placeId: place });
+        const foundPlace = await Place.findById(place);
         if (!foundPlace) {
             return res.status(404).json({ error: "Place not found." });
         }
 
-        // Check if a booking already exists for the same place, check-in date, and price category
-        let existingBooking = await Booking.findOne({
+        const allBookings = await Booking.find({ place: foundPlace._id });
+        // console.log("📌 All bookings for this place:", allBookings);
+
+        const checkInDate = new Date(checkIn);
+        checkInDate.setHours(0, 0, 0, 0);
+
+        const existingBooking = await Booking.findOne({
             place: foundPlace._id,
-            checkIn,
-            priceSelectedByUser
+            priceSelectedByUser: Number(priceSelectedByUser),
+            checkIn: { 
+                $gte: checkInDate, 
+                $lt: new Date(checkInDate.getTime() + 86400000) // Adds 1 day
+            }
         });
 
+        console.log("🔍 Checking for existing booking:", { 
+            place: foundPlace._id, 
+            checkIn: checkInDate, 
+            priceSelectedByUser: Number(priceSelectedByUser) 
+        });
+        console.log("⚠️ Existing booking found?", existingBooking);
+
         if (existingBooking) {
-            // Check if user is already in the booking
             const isUserAlreadyBooked = existingBooking.users.includes(userData.id);
 
             if (isUserAlreadyBooked) {
@@ -208,7 +216,7 @@ app.post('/bookings', async (req, res) => {
                 });
             }
 
-            // If user is not in the booking, add them
+            // 🟢 Step 6: If user is not in the booking, add them
             existingBooking.users.push(userData.id);
             await existingBooking.save();
 
@@ -218,12 +226,12 @@ app.post('/bookings', async (req, res) => {
             });
         }
 
-        // If no existing booking, create a new one
+        // 🟢 Step 7: If no existing booking, create a new one
         const newBooking = await Booking.create({
             place: foundPlace._id,
             users: [userData.id], 
-            checkIn,
-            priceSelectedByUser
+            checkIn: checkInDate,
+            priceSelectedByUser: Number(priceSelectedByUser)
         });
 
         return res.json({ 
@@ -232,10 +240,29 @@ app.post('/bookings', async (req, res) => {
         });
 
     } catch (err) {
-        console.error("Error in booking:", err);
+        console.error("❌ Error in booking:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });
+
+// app.post('/bookings', async (req, res) => {
+//     try {
+//         console.log('Booking request body:', req.body);  // Log the incoming request body
+        
+//         const userData = await getUserDataFromReq(req);
+//         const { place, checkIn, priceSelectedByUser } = req.body;
+
+//         // Validate required fields
+//         if (!place || !checkIn || !priceSelectedByUser) {
+//             return res.status(400).json({ error: "Missing required fields." });
+//         }
+        
+//         // Continue processing...
+//     } catch (err) {
+//         console.error("Error in booking:", err);
+//         res.status(500).json({ error: "Internal Server Error", details: err.message });
+//     }
+// });
 
 // 🟢 FETCH BOOKINGS
 app.get('/bookings', async (req, res) => {
