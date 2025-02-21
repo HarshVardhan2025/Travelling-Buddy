@@ -131,7 +131,7 @@ app.post('/upload', photosMiddleware.array('photos', 100), async (req, res) => {
 // 🟢 CREATE PLACE
 app.post('/places', async (req, res) => {
     const { token } = req.cookies;
-    const { title, locationsToVisit, addedPhotos, description, priceToOutput, perks, extraInfo } = req.body;
+    const { title, locationsToVisit, addedPhotos, description, priceToOutput, perks, extraInfo, itinerary } = req.body;
 
     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
         if (err) return res.status(403).json({ error: "Invalid token" });
@@ -140,7 +140,8 @@ app.post('/places', async (req, res) => {
             const placeDoc = await Place.create({
                 title, locationsToVisit, photos: addedPhotos,
                 description, perks, extraInfo,
-                priceToOutput, basePrice: priceToOutput.economy
+                priceToOutput, basePrice: priceToOutput.economy,
+                itinerary
             });
 
             console.log("✅ New Place Created - ID:", placeDoc._id);
@@ -151,21 +152,57 @@ app.post('/places', async (req, res) => {
     });
 });
 
+// 🟢 UPDATE PLACE
+app.put('/places/:id', async (req, res) => {
+    try {
+        const placeId = req.params.id;
+        const updatedData = req.body;
+
+        const updatedPlace = await Place.findByIdAndUpdate(placeId, updatedData, { new: true });
+
+        if (!updatedPlace) {
+            return res.status(404).json({ error: "Place not found" });
+        }
+
+        res.json(updatedPlace);
+    } catch (err) {
+        res.status(500).json({ error: "Error updating place", details: err.message });
+    }
+});
+
+app.get('/places/:id', async (req, res) => {
+    try {
+        const place = await Place.findById(req.params.id);
+        if (!place) return res.status(404).json({ error: "Place not found" });
+
+        res.json(place);
+    } catch (err) {
+        res.status(500).json({ error: "Error fetching place", details: err.message });
+    }
+});
+
 // 🟢 FETCH ALL PLACES
 app.get('/places', async (req, res) => {
     res.json(await Place.find());
 });
 
 // 🟢 FETCH PLACE BY ID
-app.get('/places/:id', async (req, res) => {
+app.get('/bookings/:id', async (req, res) => {
     try {
-        const place = await Place.findById(req.params.id);
-        if (!place) return res.status(404).json({ error: "Place not found" });
+        const booking = await Booking.findById(req.params.id).populate({
+            path: 'users',
+            select: 'name email'
+        }).populate({
+            path: 'place',
+            select: 'title locationsToVisit photos description priceToOutput itinerary'
+        });
 
-        // console.log("✅ Place Found - ID:", place._id);
-        res.json(place);
+        if (!booking) return res.status(404).json({ error: "Booking not found." });
+
+        res.json(booking);
     } catch (err) {
-        res.status(500).json({ error: "Error fetching place", details: err.message });
+        console.error("Error fetching booking:", err);
+        res.status(500).json({ error: "Error fetching booking", details: err.message });
     }
 });
 
@@ -277,25 +314,6 @@ app.get('/bookings', async (req, res) => {
         res.json(bookings);
     } catch (err) {
         res.status(500).json({ error: "Internal Server Error", details: err.message });
-    }
-});
-
-app.get('/bookings/:id', async (req, res) => {
-    try {
-        const booking = await Booking.findById(req.params.id).populate({
-            path: 'users',
-            select: 'name email'
-        }).populate({
-            path: 'place',
-            select: 'title locationsToVisit photos description priceToOutput'
-        });
-
-        if (!booking) return res.status(404).json({ error: "Booking not found." });
-
-        res.json(booking);
-    } catch (err) {
-        console.error("Error fetching booking:", err);
-        res.status(500).json({ error: "Error fetching booking", details: err.message });
     }
 });
 

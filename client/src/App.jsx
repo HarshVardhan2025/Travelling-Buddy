@@ -14,6 +14,7 @@ import PlacePage from "./pages/PlacePage";
 import BookingsPage from "./pages/BookingsPage";
 import BookingPage from "./pages/BookingPage";
 import TravelBuddyProfile from './pages/TravelBuddyProfile.jsx';
+import PersonalityTestPage from './pages/PersonalityTestPage.jsx';
 
 axios.defaults.baseURL= 'http://localhost:4000';
 axios.defaults.withCredentials = true;
@@ -46,6 +47,9 @@ function App() {
           <Route path="/account/bookings/:id" element={<BookingPage />} />
 
           <Route path="/user-profile/:email" element={<TravelBuddyProfile />} />
+          
+          {/* Personality Test Route */}
+          <Route path="/personality-test" element={<PersonalityTestPage />} />
         </Route>
       </Routes>
     </UserContextProvider>
