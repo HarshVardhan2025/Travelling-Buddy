@@ -15,6 +15,7 @@ import BookingsPage from "./pages/BookingsPage";
 import BookingPage from "./pages/BookingPage";
 import TravelBuddyProfile from './pages/TravelBuddyProfile.jsx';
 import PersonalityTestPage from './pages/PersonalityTestPage.jsx';
+import AdminDashboard from './pages/AdminDashboard.jsx';
 
 axios.defaults.baseURL= 'http://localhost:4000';
 axios.defaults.withCredentials = true;
@@ -50,6 +51,9 @@ function App() {
           
           {/* Personality Test Route */}
           <Route path="/personality-test" element={<PersonalityTestPage />} />
+          
+          {/* Admin Dashboard Route */}
+          <Route path="/admin" element={<AdminDashboard />} />
         </Route>
       </Routes>
     </UserContextProvider>

@@ -90,7 +90,7 @@ export default function PlacesFormPage() {
     }
 
     if (redirect) {
-        return <Navigate to={"/account/places"} />;
+        return <Navigate to={"/admin"} />;
     }
 
     function renderItineraryInputs(category) {

@@ -16,17 +16,19 @@ export default function ProfilePage() {
         subpage = "profile";
     }
 
+    // Fetch user info
     useEffect(() => {
         if (user?.email) {
             axios.get(`/user-info/${user.email}`)
                 .then(response => {
                     console.log("Fetched User Info: ", response.data);
-                    setUserInfo(response.data)
+                    setUserInfo(response.data);
                 })
                 .catch(error => console.error("Error fetching user info:", error));
         }
     }, [user?.email]);
 
+    // Fetch user bookings
     useEffect(() => {
         axios.get("/bookings")
             .then(response => setBookings(response.data))
@@ -55,13 +57,16 @@ export default function ProfilePage() {
             <AccountNav />
             {subpage === "profile" && (
                 <div className="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg mt-10">
+                    {/* Profile Section */}
                     <div className="flex items-center space-x-6">
+                        {/* SVG Person Icon */}
                         <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-16 h-16 text-gray-600">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 21a8.25 8.25 0 0115 0" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                             </svg>
                         </div>
 
+                        {/* User Details */}
                         <div>
                             <h1 className="text-2xl font-semibold">{userInfo?.name || "User Name"}</h1>
                             <p className="text-gray-500">{userInfo?.profession || "Profession"}</p>
@@ -76,19 +81,24 @@ export default function ProfilePage() {
                                 {userInfo?.addressLine1 || "Address Line 1"}, {userInfo?.addressLine2 || "Address Line 2"}, {userInfo?.addressLine3 || "Address Line 3"}
                             </p>
                             <p className="font-bold">Personality Category: <span className="text-blue-600">{userInfo?.personalityCategory || "Not Taken"}</span></p>
-                            
-                            <Link to="/personality-test">
-                                <button className="mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition">
-                                    Take Personality Test
-                                </button>
-                            </Link>
                         </div>
                     </div>
 
+                    {/* Take Personality Test Button (Only if not taken) */}
+                    {!userInfo?.personalityCategory && (
+                        <div className="text-center mt-6">
+                            <Link to="/personality-test" className="bg-primary text-white px-6 py-2 rounded-md">
+                                Take Personality Test
+                            </Link>
+                        </div>
+                    )}
+
+                    {/* Logout Button */}
                     <div className="text-center mt-6">
                         <button onClick={logout} className="primary max-w-sm">Logout</button>
                     </div>
 
+                    {/* Previous Bookings */}
                     <h2 className="text-xl font-semibold mt-8">Previous Bookings</h2>
                     <div className="flex overflow-x-auto space-x-4 mt-4 p-2">
                         {bookings.length > 0 ? (
