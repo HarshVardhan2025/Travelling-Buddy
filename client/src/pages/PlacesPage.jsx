@@ -42,7 +42,7 @@ export default function PlacesPage() {
                                 {place.photos?.length > 0 ? (
                                     <img 
                                         className="w-full h-full object-cover" 
-                                        src={`http://localhost:4000/uploads/${place.photos[0]}`} 
+                                        src={`https://travelling-buddy.onrender.com/uploads/${place.photos[0]}`} 
                                         alt={place.title} 
                                     />
                                 ) : (
