@@ -28,9 +28,6 @@ app.use(cors({
 }));
 
 mongoose.connect(process.env.MONGO_URL);
-
-const jwt = require("jsonwebtoken");
-
 async function getUserDataFromReq(req) {
     try {
         const token = req.headers.authorization?.split(" ")[1]; // Extract Bearer token
