@@ -15,7 +15,7 @@ require('dotenv').config();
 const app = express();
 
 const bcryptSalt = bcrypt.genSaltSync(10);
-const jwtSecret = 'bsbvdsvnonsvnslvbsdlvsn';
+// const jwtSecret = 'bsbvdsvnonsvnslvbsdlvsn';
 
 const ADMIN_EMAILS = ["namanrst@gmail.com", "harshvs@gmail.com"];
 
@@ -24,19 +24,23 @@ app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/Uploads'));
 app.use(cors({
     credentials: true,
-    origin: 'http://localhost:5173',
+    origin: 'https://travelling-buddy-frontend.onrender.com',
 }));
 
 mongoose.connect(process.env.MONGO_URL);
+async function getUserDataFromReq(req) {
+    try {
+        const token = req.headers.authorization?.split(" ")[1]; // Extract Bearer token
+        if (!token) throw new Error("Missing token");
 
-function getUserDataFromReq(req) {
-    return new Promise((resolve, reject) => {
-        jwt.verify(req.cookies.token, jwtSecret, {}, async (err, userData) => {
-            if (err) reject(err);
-            resolve(userData);
-        });
-    });
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        return decoded;
+    } catch (error) {
+        console.error("JWT Error:", error.message);
+        return null;
+    }
 }
+
 
 app.get('/test', (req, res) => {
     res.json('test ok');
@@ -67,7 +71,7 @@ app.post('/login', async (req, res) => {
 
     const passOk = bcrypt.compareSync(password, userDoc.password);
     if (passOk) {
-        jwt.sign({ email: userDoc.email, id: userDoc._id }, jwtSecret, {}, (err, token) => {
+        jwt.sign({ email: userDoc.email, id: userDoc._id }, process.env.jwtSecret, {}, (err, token) => {
             if (err) throw err;
             res.cookie('token', token, {
                 httpOnly: true,
@@ -86,7 +90,7 @@ app.get('/profile', async (req, res) => {
     const { token } = req.cookies;
     if (!token) return res.json(null);
 
-    jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+    jwt.verify(token, process.env.jwtSecret, {}, async (err, userData) => {
         if (err) throw err;
         const { name, email, _id } = await User.findById(userData.id);
         res.json({ name, email, _id });
@@ -164,7 +168,7 @@ app.post('/places', async (req, res) => {
     const { token } = req.cookies;
     const { title, locationsToVisit, addedPhotos, description, priceToOutput, perks, extraInfo, itinerary } = req.body;
 
-    jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+    jwt.verify(token, process.env.jwtSecret, {}, async (err, userData) => {
         if (err) return res.status(403).json({ error: "Invalid token" });
 
         try {
