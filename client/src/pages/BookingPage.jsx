@@ -12,10 +12,10 @@ export default function BookingPage() {
         if (!id) return;
         axios.get(`/bookings/${id}`)
             .then(response => {
-                console.log("✅ Booking Found:", response.data);
+                console.log("Booking Found:", response.data);
                 setBooking(response.data);
             })
-            .catch(error => console.error("❌ Error fetching booking:", error));
+            .catch(error => console.error("Error fetching booking:", error));
     }, [id]);
 
     if (!booking) {

@@ -12,15 +12,14 @@ export default function PlacePage() {
     useEffect(() => {
         if (!id) return;
     
-        console.log("📢 Fetching place with ID:", id);
+        console.log("Fetching place with ID:", id);
     
         axios.get(`/places/${id}`)
             .then(response => {
-                console.log("✅ Fetched Place Data:", response.data);
                 setPlace(response.data);
             })
             .catch(error => {
-                console.error("❌ Error fetching place:", error.response?.data || error.message);
+                console.error("Error fetching place:", error.response?.data || error.message);
             });
     }, [id]);
 

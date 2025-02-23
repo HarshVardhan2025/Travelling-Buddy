@@ -25,34 +25,19 @@ function App() {
     <UserContextProvider>
       <Routes>
         <Route path="/" element={<Layout />}>
-          {/* Home Page */}
           <Route index element={<IndexPage />} />
-
-          {/* Authentication Routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-
-          {/* User Profile */}
-          <Route path="/account" element={<ProfilePage />} /> {/* Profile Page with Logout */}
-
-          {/* Places Management */}
+          <Route path="/account" element={<ProfilePage />} /> 
           <Route path="/account/places" element={<PlacesPage />} />
           <Route path="/account/places/new" element={<PlacesFormPage />} />
           <Route path="/account/places/:id" element={<PlacesFormPage />} />
-
-          {/* View a Single Place */}
-          <Route path="/place/:id" element={<PlacePage />} /> {/* Uses UUID instead of MongoDB _id */}
-
-          {/* Booking Routes */}
+          <Route path="/place/:id" element={<PlacePage />} /> 
           <Route path="/account/bookings" element={<BookingsPage />} />
           <Route path="/account/bookings/:id" element={<BookingPage />} />
 
           <Route path="/user-profile/:email" element={<TravelBuddyProfile />} />
-          
-          {/* Personality Test Route */}
           <Route path="/personality-test" element={<PersonalityTestPage />} />
-          
-          {/* Admin Dashboard Route */}
           <Route path="/admin" element={<AdminDashboard />} />
         </Route>
       </Routes>

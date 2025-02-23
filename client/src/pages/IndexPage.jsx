@@ -9,11 +9,10 @@ export default function IndexPage() {
     useEffect(() => {
         axios.get('/places')
             .then(response => {
-                console.log("✅ Fetched Places Data:", response.data); // Debugging log
                 setPlaces(response.data);
             })
             .catch(error => {
-                console.error("❌ Error fetching places:", error);
+                console.error("Error fetching places:", error);
             });
     }, []);
 
@@ -22,7 +21,6 @@ export default function IndexPage() {
             {places.length > 0 ? (
                 places.map(place => (
                     <Link key={place._id} to={`/place/${place._id}`} className="block">
-                        {/* Image Container */}
                         <div className="bg-gray-500 mb-2 rounded-2xl flex overflow-hidden">
                             {place.photos?.[0] ? (
                                 <img 
@@ -36,11 +34,7 @@ export default function IndexPage() {
                                 </div>
                             )}
                         </div>
-
-                        {/* Title */}
                         <h2 className="font-bold text-lg text-center">{place.title}</h2>
-
-                        {/* Price */}
                         <div className="mt-1 text-lg font-semibold text-center">
                             <span>₹{place.basePrice || "N/A"}</span>
                         </div>

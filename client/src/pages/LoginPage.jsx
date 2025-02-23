@@ -13,7 +13,7 @@ export default function LoginPage() {
         ev.preventDefault();
         try {
             const response = await axios.post('/login', { email, password });
-            const userInfo = response.data; // Access the data property
+            const userInfo = response.data;
             setUser(userInfo);
             alert('Login Successful');
             setRedirect(true);

@@ -13,7 +13,7 @@ export default function PlacesPage() {
                 setPlaces(data);
             })
             .catch(error => {
-                console.error("❌ Error fetching places:", error);
+                console.error("Error fetching places:", error);
             });
     }, []);
 

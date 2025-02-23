@@ -42,7 +42,7 @@ app.get('/test', (req, res) => {
     res.json('test ok');
 });
 
-// 🟢 REGISTER
+//REGISTER
 app.post('/register', async (req, res) => {
     const { name, email, password, phone, addressLine1, addressLine2, addressLine3, profession, age, socialMediaID } = req.body;
     try {
@@ -52,14 +52,13 @@ app.post('/register', async (req, res) => {
             addressLine1, addressLine2, addressLine3,
             profession, age, socialMediaID
         });
-        console.log("✅ New User Registered - ID:", userDoc._id);
         res.json(userDoc);
     } catch (e) {
         res.status(422).json(e);
     }
 });
 
-// 🟢 LOGIN
+//LOGIN
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     const userDoc = await User.findOne({ email });
@@ -82,7 +81,7 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// 🟢 USER PROFILE
+//USER PROFILE
 app.get('/profile', async (req, res) => {
     const { token } = req.cookies;
     if (!token) return res.json(null);
@@ -103,15 +102,11 @@ app.post('/submit-personality-test', async (req, res) => {
         if (!responses || responses.length !== 25) {
             return res.status(400).json({ error: "Invalid responses. Must have 25 values." });
         }
-        
-        // Calculate trait scores
         const extraversion = responses.slice(0, 5).reduce((a, b) => a + b, 0);
         const neuroticism = responses.slice(5, 10).reduce((a, b) => a + b, 0);
         const agreeableness = responses.slice(10, 15).reduce((a, b) => a + b, 0);
         const conscientiousness = responses.slice(15, 20).reduce((a, b) => a + b, 0);
         const openness = responses.slice(20, 25).reduce((a, b) => a + b, 0);
-        
-        // Compute personality category scores
         const categories = {
             "Strategic Leader": (0.5 * conscientiousness) + (0.3 * extraversion) + (0.2 * (25 - neuroticism)),
             "Expressive Connector": (0.5 * extraversion) + (0.3 * agreeableness) + (0.2 * openness),
@@ -119,11 +114,7 @@ app.post('/submit-personality-test', async (req, res) => {
             "Resilient Caregiver": (0.5 * agreeableness) + (0.3 * neuroticism) + (0.2 * conscientiousness),
             "Tactical Realist": (0.5 * conscientiousness) + (0.3 * (25 - agreeableness)) + (0.2 * neuroticism)
         };
-        
-        // Determine highest scoring category
         const personalityCategory = Object.keys(categories).reduce((a, b) => categories[a] > categories[b] ? a : b);
-        
-        // Update user document
         await User.findByIdAndUpdate(userData.id, {
             personalityCategory,
             personalityScores: { extraversion, neuroticism, agreeableness, conscientiousness, openness }
@@ -131,12 +122,12 @@ app.post('/submit-personality-test', async (req, res) => {
         
         res.json({ message: "Personality test submitted successfully!", personalityCategory });
     } catch (err) {
-        console.error("❌ Error in submitting personality test:", err);
+        console.error("Error in submitting personality test:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });
 
-// 🟢 FETCH USER INFO BY EMAIL
+//FETCH USER INFO BY EMAIL
 app.get('/user-info/:email', async (req, res) => {
     try {
         const { email } = req.params;
@@ -145,17 +136,17 @@ app.get('/user-info/:email', async (req, res) => {
         if (!user) return res.status(404).json({ error: "User not found" });
         res.json(user);
     } catch (err) {
-        console.error("❌ Error fetching user info:", err);
+        console.error("Error fetching user info:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });
 
-// 🟢 LOGOUT
+//LOGOUT
 app.post('/logout', (req, res) => {
     res.cookie('token', '').json(true);
 });
 
-// 🟢 UPLOAD PHOTOS
+//UPLOAD PHOTOS
 const photosMiddleware = multer({ dest: 'Uploads/' });
 app.post('/upload', photosMiddleware.array('photos', 100), async (req, res) => {
     const uploadedFiles = [];
@@ -168,7 +159,7 @@ app.post('/upload', photosMiddleware.array('photos', 100), async (req, res) => {
     res.json(uploadedFiles);
 });
 
-// 🟢 CREATE PLACE
+//CREATE PLACE
 app.post('/places', async (req, res) => {
     const { token } = req.cookies;
     const { title, locationsToVisit, addedPhotos, description, priceToOutput, perks, extraInfo, itinerary } = req.body;
@@ -184,7 +175,7 @@ app.post('/places', async (req, res) => {
                 itinerary
             });
 
-            console.log("✅ New Place Created - ID:", placeDoc._id);
+            console.log("New Place Created - ID:", placeDoc._id);
             res.json(placeDoc);
         } catch (error) {
             res.status(500).json({ error: "Error creating place", details: error.message });
@@ -192,7 +183,7 @@ app.post('/places', async (req, res) => {
     });
 });
 
-// 🟢 UPDATE PLACE
+//UPDATE PLACE
 app.put('/places/:id', async (req, res) => {
     try {
         const placeId = req.params.id;
@@ -221,12 +212,12 @@ app.get('/places/:id', async (req, res) => {
     }
 });
 
-// 🟢 FETCH ALL PLACES
+//FETCH ALL PLACES
 app.get('/places', async (req, res) => {
     res.json(await Place.find());
 });
 
-// 🟢 FETCH PLACE BY ID
+//FETCH PLACE BY ID
 app.get('/bookings/:id', async (req, res) => {
     try {
         const booking = await Booking.findById(req.params.id).populate({
@@ -246,7 +237,7 @@ app.get('/bookings/:id', async (req, res) => {
     }
 });
 
-// 🟢 BOOKING A PLACE
+//BOOKING A PLACE
 app.post('/bookings', async (req, res) => {
     try {
         const userData = await getUserDataFromReq(req);
@@ -304,31 +295,12 @@ app.post('/bookings', async (req, res) => {
 
         return res.json({ message: "New booking created successfully!", bookingId: newBooking._id });
     } catch (err) {
-        console.error("❌ Error in booking:", err);
+        console.error("Error in booking:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });
 
-// app.post('/bookings', async (req, res) => {
-//     try {
-//         console.log('Booking request body:', req.body);  // Log the incoming request body
-        
-//         const userData = await getUserDataFromReq(req);
-//         const { place, checkIn, priceSelectedByUser } = req.body;
-
-//         // Validate required fields
-//         if (!place || !checkIn || !priceSelectedByUser) {
-//             return res.status(400).json({ error: "Missing required fields." });
-//         }
-        
-//         // Continue processing...
-//     } catch (err) {
-//         console.error("Error in booking:", err);
-//         res.status(500).json({ error: "Internal Server Error", details: err.message });
-//     }
-// });
-
-// 🟢 FETCH BOOKINGS
+//FETCH BOOKINGS
 app.get('/bookings', async (req, res) => {
     try {
         const userData = await getUserDataFromReq(req);
@@ -355,7 +327,7 @@ app.get('/is-admin', async (req, res) => {
         }
         res.json({ isAdmin: true });
     } catch (err) {
-        console.error("❌ Error checking admin status:", err);
+        console.error("Error checking admin status:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });
@@ -373,7 +345,7 @@ app.get('/admin/users', async (req, res) => {
         const users = await User.find().select("name email personalityCategory bookingIds");
         res.json(users);
     } catch (err) {
-        console.error("❌ Error fetching users:", err);
+        console.error("Error fetching users:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });
@@ -391,7 +363,7 @@ app.delete('/admin/users/:id', async (req, res) => {
         await User.findByIdAndDelete(req.params.id);
         res.json({ message: "User deleted successfully." });
     } catch (err) {
-        console.error("❌ Error deleting user:", err);
+        console.error("Error deleting user:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });
@@ -419,7 +391,7 @@ app.put('/admin/users/:id/reset-personality', async (req, res) => {
         
         res.json({ message: "User's personality test has been reset." });
     } catch (err) {
-        console.error("❌ Error resetting personality test:", err);
+        console.error("Error resetting personality test:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });
@@ -440,7 +412,7 @@ app.get('/admin/bookings', async (req, res) => {
         
         res.json(bookings);
     } catch (err) {
-        console.error("❌ Error fetching bookings:", err);
+        console.error("Error fetching bookings:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });
@@ -458,7 +430,7 @@ app.delete('/admin/bookings/:id', async (req, res) => {
         await Booking.findByIdAndDelete(req.params.id);
         res.json({ message: "Booking deleted successfully." });
     } catch (err) {
-        console.error("❌ Error deleting booking:", err);
+        console.error("Error deleting booking:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });
@@ -476,7 +448,7 @@ app.get('/admin/places', async (req, res) => {
         const places = await Place.find();
         res.json(places);
     } catch (err) {
-        console.error("❌ Error fetching places:", err);
+        console.error("Error fetching places:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });
@@ -494,7 +466,7 @@ app.delete('/admin/places/:id', async (req, res) => {
         await Place.findByIdAndDelete(req.params.id);
         res.json({ message: "Place deleted successfully." });
     } catch (err) {
-        console.error("❌ Error deleting place:", err);
+        console.error("Error deleting place:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });
@@ -512,7 +484,7 @@ app.put('/admin/places/:id', async (req, res) => {
         const updatedPlace = await Place.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(updatedPlace);
     } catch (err) {
-        console.error("❌ Error updating place:", err);
+        console.error("Error updating place:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });
@@ -530,9 +502,9 @@ app.post('/admin/places', async (req, res) => {
         const newPlace = await Place.create(req.body);
         res.json(newPlace);
     } catch (err) {
-        console.error("❌ Error creating place:", err);
+        console.error("Error creating place:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });
 
-app.listen(4000, () => console.log("🚀 Server running on port 4000"));
+app.listen(4000, () => console.log("Server running on port 4000"));
