@@ -29,14 +29,21 @@ app.use(cors({
 
 mongoose.connect(process.env.MONGO_URL);
 
-function getUserDataFromReq(req) {
-    return new Promise((resolve, reject) => {
-        jwt.verify(req.cookies.token, process.env.jwtSecret, {}, async (err, userData) => {
-            if (err) reject(err);
-            resolve(userData);
-        });
-    });
+const jwt = require("jsonwebtoken");
+
+async function getUserDataFromReq(req) {
+    try {
+        const token = req.headers.authorization?.split(" ")[1]; // Extract Bearer token
+        if (!token) throw new Error("Missing token");
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        return decoded;
+    } catch (error) {
+        console.error("JWT Error:", error.message);
+        return null;
+    }
 }
+
 
 app.get('/test', (req, res) => {
     res.json('test ok');
