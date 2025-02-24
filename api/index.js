@@ -30,20 +30,23 @@ app.use(cors({
 
 mongoose.connect(process.env.MONGO_URL);
 
-
-function getUserDataFromReq(req) {
-    return new Promise((resolve, reject) => {
-        const token = req.cookies?.token;
-        if (!token) {
-            return reject(new Error("JWT token is missing"));
+const getUserDataFromReq = (req) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            console.log("❌ No token provided in request headers.");
+            return null;
         }
 
-        jwt.verify(token, jwtSecret, {}, (err, userData) => {
-            if (err) return reject(err);
-            resolve(userData);
-        });
-    });
-}
+        const token = authHeader.split(" ")[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log("✅ Token successfully verified:", decoded);
+        return decoded; // Should return { id, email, ... }
+    } catch (err) {
+        console.error("❌ Error verifying token:", err);
+        return null;
+    }
+};
 
 
 app.get('/test', (req, res) => {
@@ -327,20 +330,39 @@ app.get('/bookings', async (req, res) => {
 // Check if user is an admin
 app.get('/is-admin', async (req, res) => {
     try {
+        console.log("🔍 Checking admin status...");
+
+        // Extract user data from request
         const userData = await getUserDataFromReq(req);
-        const user = await User.findById(userData.id);
-        if (!req.user) {
-          return res.status(401).json({ error: "Unauthorized: Invalid or missing token" });
+        console.log("✅ Extracted user data:", userData);
+
+        if (!userData) {
+            console.log("❌ No user data found, returning unauthorized.");
+            return res.status(401).json({ error: "Unauthorized: Invalid or missing token" });
         }
-        if (!user || !ADMIN_EMAILS.includes(user.email)) {
+
+        const user = await User.findById(userData.id);
+        console.log("🔍 Fetched user from database:", user);
+
+        if (!user) {
+            console.log("❌ User not found in database.");
             return res.json({ isAdmin: false });
         }
+
+        if (!ADMIN_EMAILS.includes(user.email)) {
+            console.log("❌ User is not an admin.");
+            return res.json({ isAdmin: false });
+        }
+
+        console.log("✅ User is an admin.");
         res.json({ isAdmin: true });
+
     } catch (err) {
-        console.error("Error checking admin status:", err);
+        console.error("🔥 Error checking admin status:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });
+
 
 // Admin route: Fetch all users
 app.get('/admin/users', async (req, res) => {
