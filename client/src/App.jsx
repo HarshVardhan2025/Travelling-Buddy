@@ -4,7 +4,6 @@ import IndexPage from './pages/IndexPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import Layout from './Layout.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
-
 import axios from 'axios';
 import { UserContextProvider } from './UserContext';
 import ProfilePage from './pages/ProfilePage.jsx';
@@ -17,9 +16,23 @@ import TravelBuddyProfile from './pages/TravelBuddyProfile.jsx';
 import PersonalityTestPage from './pages/PersonalityTestPage.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 
-axios.defaults.baseURL= 'https://travelling-buddy.onrender.com';
-// axios.defaults.baseURL= 'https:localhost:4000';
+// ✅ Set default API URL
+axios.defaults.baseURL = 'https://travelling-buddy.onrender.com';
 axios.defaults.withCredentials = true;
+
+// ✅ Automatically attach token to requests
+axios.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem("token");
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
 function App() {
   return (

@@ -70,27 +70,33 @@ app.post('/register', async (req, res) => {
 });
 
 //LOGIN
-app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-    const userDoc = await User.findOne({ email });
+app.post("/login", async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const userDoc = await User.findOne({ email });
 
-    if (!userDoc) return res.status(404).json('User not found');
+        if (!userDoc) return res.status(404).json({ error: "User not found" });
 
-    const passOk = bcrypt.compareSync(password, userDoc.password);
-    if (passOk) {
-        jwt.sign({ email: userDoc.email, id: userDoc._id }, jwtSecret, {}, (err, token) => {
-            if (err) throw err;
-            res.cookie('token', token, {
-                httpOnly: true,
-                secure: true,
-                sameSite: 'None',
-                maxAge: 24 * 60 * 60 * 1000, // 1 day
-            }).json(userDoc);
-        });
-    } else {
-        res.status(422).json('Incorrect password');
+        const passOk = bcrypt.compareSync(password, userDoc.password);
+        if (!passOk) return res.status(422).json({ error: "Incorrect password" });
+
+        // ✅ Sign the JWT
+        const token = jwt.sign(
+            { email: userDoc.email, id: userDoc._id },
+            process.env.JWT_SECRET, // Ensure this is properly set
+            { expiresIn: "1d" }
+        );
+
+        console.log("✅ Token generated:", token); // 🔴 Debugging log
+
+        // ✅ Return token in response instead of a cookie
+        res.json({ user: userDoc, token });
+    } catch (error) {
+        console.error("❌ Login error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
 
 //USER PROFILE
 app.get('/profile', async (req, res) => {
@@ -327,31 +333,20 @@ app.get('/bookings', async (req, res) => {
     }
 });
 
-// Check if user is an admin
-const authenticateUser = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        console.error("❌ No token provided in request headers.");
-        return res.status(401).json({ error: "Unauthorized: No token provided" });
-    }
 
-    const token = authHeader.split(" ")[1]; // Extract token after "Bearer"
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded; // Attach user data to request
-        next();
-    } catch (err) {
-        console.error("❌ Invalid token:", err);
-        return res.status(403).json({ error: "Unauthorized: Invalid token" });
-    }
-};
 
 // 🔍 Admin Check API Route
-app.get("/is-admin", authenticateUser, async (req, res) => {
+app.get('/is-admin', async (req, res) => {
     try {
-        console.log("🔍 Checking admin status...");
-        
-        const user = await User.findById(req.user.id);
+        const token = req.headers.authorization?.split(" ")[1]; // Extract token from "Bearer TOKEN"
+
+        if (!token) {
+            return res.status(401).json({ error: "Unauthorized: No token provided" });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id);
+
         if (!user || !ADMIN_EMAILS.includes(user.email)) {
             return res.json({ isAdmin: false });
         }
