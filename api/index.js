@@ -29,19 +29,20 @@ app.use(cors({
 }));
 
 mongoose.connect(process.env.MONGO_URL);
-function getUserDataFromReq(req) {
-    return new Promise((resolve, reject) => {
-        const token = req.cookies?.token;
-        if (!token) {
-            return reject(new Error("JWT token is missing"));
-        }
 
-        jwt.verify(token, jwtSecret, {}, (err, userData) => {
-            if (err) return reject(err);
-            resolve(userData);
-        });
-    });
-}
+const getUserDataFromReq = (req) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1]; // Extract token from `Authorization: Bearer <token>`
+    if (!token) return null; 
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return decoded; // { id: userId, email: userEmail, ... }
+  } catch (err) {
+    console.error("Error extracting user data:", err);
+    return null;
+  }
+};
+
 
 
 app.get('/test', (req, res) => {
@@ -326,13 +327,18 @@ app.get('/bookings', async (req, res) => {
 app.get('/is-admin', async (req, res) => {
     try {
         const userData = await getUserDataFromReq(req);
-        const user = await User.findById(userData.id);
-        if (!req.user) {
-          return res.status(401).json({ error: "Unauthorized: Invalid or missing token" });
+
+        if (!userData) {
+            return res.status(401).json({ error: "Unauthorized: Invalid or missing token" });
         }
+
+        req.user = userData; // Assign user data to req.user
+        const user = await User.findById(userData.id);
+
         if (!user || !ADMIN_EMAILS.includes(user.email)) {
             return res.json({ isAdmin: false });
         }
+
         res.json({ isAdmin: true });
     } catch (err) {
         console.error("Error checking admin status:", err);
