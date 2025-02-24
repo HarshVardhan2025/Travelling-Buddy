@@ -326,7 +326,9 @@ app.get('/is-admin', async (req, res) => {
     try {
         const userData = await getUserDataFromReq(req);
         const user = await User.findById(userData.id);
-        
+        if (!req.user) {
+          return res.status(401).json({ error: "Unauthorized: Invalid or missing token" });
+        }
         if (!user || !ADMIN_EMAILS.includes(user.email)) {
             return res.json({ isAdmin: false });
         }
