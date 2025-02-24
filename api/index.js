@@ -34,16 +34,16 @@ const getUserDataFromReq = (req) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            console.log("❌ No token provided in request headers.");
+            console.log("No token provided in request headers.");
             return null;
         }
 
         const token = authHeader.split(" ")[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log("✅ Token successfully verified:", decoded);
+        console.log("Token successfully verified:", decoded);
         return decoded; // Should return { id, email, ... }
     } catch (err) {
-        console.error("❌ Error verifying token:", err);
+        console.error("Error verifying token:", err);
         return null;
     }
 };
@@ -80,19 +80,19 @@ app.post("/login", async (req, res) => {
         const passOk = bcrypt.compareSync(password, userDoc.password);
         if (!passOk) return res.status(422).json({ error: "Incorrect password" });
 
-        // ✅ Sign the JWT
+        //Sign the JWT
         const token = jwt.sign(
             { email: userDoc.email, id: userDoc._id },
             process.env.JWT_SECRET, // Ensure this is properly set
             { expiresIn: "1d" }
         );
 
-        console.log("✅ Token generated:", token); // 🔴 Debugging log
+        console.log("Token generated:", token); //Debugging log
 
-        // ✅ Return token in response instead of a cookie
+        //Return token in response instead of a cookie
         res.json({ user: userDoc, token });
     } catch (error) {
-        console.error("❌ Login error:", error);
+        console.error("Login error:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
@@ -335,7 +335,7 @@ app.get('/bookings', async (req, res) => {
 
 
 
-// 🔍 Admin Check API Route
+//Admin Check API Route
 app.get('/is-admin', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(" ")[1]; // Extract token from "Bearer TOKEN"
@@ -353,7 +353,7 @@ app.get('/is-admin', async (req, res) => {
 
         res.json({ isAdmin: true });
     } catch (err) {
-        console.error("❌ Error checking admin status:", err);
+        console.error("Error checking admin status:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });

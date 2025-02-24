@@ -14,18 +14,18 @@ export default function LoginPage() {
         try {
             const response = await axios.post('https://travelling-buddy.onrender.com/login', { email, password });
 
-            console.log("✅ Login Response:", response.data); // 🔴 Debugging log
+            console.log("Login Response:", response.data); //Debugging log
 
             if (response.data.token) {
-                localStorage.setItem("token", response.data.token); // ✅ Store the JWT Token
-                setUser(response.data.user); // ✅ Store user data in context
+                localStorage.setItem("token", response.data.token); //Store the JWT Token
+                setUser(response.data.user); //Store user data in context
                 alert("Login Successful");
                 setRedirect(true);
             } else {
                 alert("Login failed: No token received");
             }
         } catch (e) {
-            console.error("❌ Login error:", e.response?.data || e);
+            console.error("Login error:", e.response?.data || e);
             alert("Login failed");
         }
     }

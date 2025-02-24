@@ -16,11 +16,11 @@ import TravelBuddyProfile from './pages/TravelBuddyProfile.jsx';
 import PersonalityTestPage from './pages/PersonalityTestPage.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 
-// ✅ Set default API URL
+//Set default API URL
 axios.defaults.baseURL = 'https://travelling-buddy.onrender.com';
 axios.defaults.withCredentials = true;
 
-// ✅ Automatically attach token to requests
+//Automatically attach token to requests
 axios.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("token");

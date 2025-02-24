@@ -13,11 +13,11 @@ export default function BookingsPage() {
                 setBookings(response.data);
             })
             .catch(error => {
-                console.error("❌ Error fetching bookings:", error);
+                console.error("Error fetching bookings:", error);
             });
     }, []);
 
-    // ✅ Function to get the correct price category from the place model
+    //Function to get the correct price category from the place model
     function getPriceCategory(booking) {
         if (!booking.place || !booking.place.priceToOutput) return "Unknown";
 
@@ -28,7 +28,7 @@ export default function BookingsPage() {
         return "Custom Price"; // In case user manually enters another amount
     }
 
-    // ✅ Function to calculate check-out date based on selected price
+    //Function to calculate check-out date based on selected price
     function calculateCheckOutDate(booking) {
         if (!booking.checkIn || !booking.place || !booking.place.priceToOutput) return "N/A";
 
