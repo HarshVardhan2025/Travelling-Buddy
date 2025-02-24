@@ -328,37 +328,37 @@ app.get('/bookings', async (req, res) => {
 });
 
 // Check if user is an admin
-app.get('/is-admin', async (req, res) => {
+const authenticateUser = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        console.error("❌ No token provided in request headers.");
+        return res.status(401).json({ error: "Unauthorized: No token provided" });
+    }
+
+    const token = authHeader.split(" ")[1]; // Extract token after "Bearer"
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded; // Attach user data to request
+        next();
+    } catch (err) {
+        console.error("❌ Invalid token:", err);
+        return res.status(403).json({ error: "Unauthorized: Invalid token" });
+    }
+};
+
+// 🔍 Admin Check API Route
+app.get("/is-admin", authenticateUser, async (req, res) => {
     try {
         console.log("🔍 Checking admin status...");
-
-        // Extract user data from request
-        const userData = await getUserDataFromReq(req);
-        console.log("✅ Extracted user data:", userData);
-
-        if (!userData) {
-            console.log("❌ No user data found, returning unauthorized.");
-            return res.status(401).json({ error: "Unauthorized: Invalid or missing token" });
-        }
-
-        const user = await User.findById(userData.id);
-        console.log("🔍 Fetched user from database:", user);
-
-        if (!user) {
-            console.log("❌ User not found in database.");
+        
+        const user = await User.findById(req.user.id);
+        if (!user || !ADMIN_EMAILS.includes(user.email)) {
             return res.json({ isAdmin: false });
         }
 
-        if (!ADMIN_EMAILS.includes(user.email)) {
-            console.log("❌ User is not an admin.");
-            return res.json({ isAdmin: false });
-        }
-
-        console.log("✅ User is an admin.");
         res.json({ isAdmin: true });
-
     } catch (err) {
-        console.error("🔥 Error checking admin status:", err);
+        console.error("❌ Error checking admin status:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });

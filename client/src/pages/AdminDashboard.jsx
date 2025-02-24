@@ -11,15 +11,32 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get("/is-admin")
-            .then(response => {
-                setIsAdmin(response.data.isAdmin);
-            })
-            .catch(error => {
-                console.error("Error checking admin status:", error);
+        const checkAdminStatus = async () => {
+            const token = localStorage.getItem("token"); // 🔑 Get JWT token
+ 
+            if (!token) {
+                console.error("❌ No token found in local storage");
                 setIsAdmin(false);
-            })
-            .finally(() => setLoading(false));
+                setLoading(false);
+                return;     
+            }
+
+            try {
+                const response = await axios.get("https://travelling-buddy.onrender.com/is-admin", {
+                    headers: {
+                        Authorization: `Bearer ${token}` // ✅ Attach token here
+                    }
+                });
+                setIsAdmin(response.data.isAdmin);
+            } catch (error) {
+                console.error("❌ Error checking admin status:", error);
+                setIsAdmin(false);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        checkAdminStatus();
     }, []);
 
     if (loading) return <p className="text-center text-gray-500">Checking access...</p>;
