@@ -77,8 +77,8 @@ app.post('/login', async (req, res) => {
             if (err) throw err;
             res.cookie('token', token, {
                 httpOnly: true,
-                secure: false,
-                sameSite: 'Lax',
+                secure: true,
+                sameSite: 'None',
                 maxAge: 24 * 60 * 60 * 1000, // 1 day
             }).json(userDoc);
         });
