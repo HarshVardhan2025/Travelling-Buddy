@@ -18,6 +18,7 @@ import PersonalityTestPage from './pages/PersonalityTestPage.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 
 axios.defaults.baseURL= 'https://travelling-buddy.onrender.com';
+// axios.defaults.baseURL= 'https:localhost:4000';
 axios.defaults.withCredentials = true;
 
 function App() {

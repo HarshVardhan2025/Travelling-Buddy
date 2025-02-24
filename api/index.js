@@ -16,7 +16,7 @@ const app = express();
 
 const bcryptSalt = bcrypt.genSaltSync(10);
 // const jwtSecret = 'bsbvdsvnonsvnslvbsdlvsn';
-
+const JWT_SECRET = process.env.jwtSecret;
 const ADMIN_EMAILS = ["namanrst@gmail.com", "harshvs@gmail.com"];
 
 app.use(express.json());
@@ -25,6 +25,7 @@ app.use('/uploads', express.static(__dirname + '/Uploads'));
 app.use(cors({
     credentials: true,
     origin: 'https://travelling-buddy-frontend.onrender.com',
+    // origin: 'http://http://localhost:5173/',
 }));
 
 mongoose.connect(process.env.MONGO_URL);
@@ -33,7 +34,7 @@ async function getUserDataFromReq(req) {
         const token = req.headers.authorization?.split(" ")[1]; // Extract Bearer token
         if (!token) throw new Error("Missing token");
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token,JWT_SECRET);
         return decoded;
     } catch (error) {
         console.error("JWT Error:", error.message);
@@ -71,7 +72,7 @@ app.post('/login', async (req, res) => {
 
     const passOk = bcrypt.compareSync(password, userDoc.password);
     if (passOk) {
-        jwt.sign({ email: userDoc.email, id: userDoc._id }, process.env.jwtSecret, {}, (err, token) => {
+        jwt.sign({ email: userDoc.email, id: userDoc._id }, JWT_SECRET, {}, (err, token) => {
             if (err) throw err;
             res.cookie('token', token, {
                 httpOnly: true,
@@ -90,7 +91,7 @@ app.get('/profile', async (req, res) => {
     const { token } = req.cookies;
     if (!token) return res.json(null);
 
-    jwt.verify(token, process.env.jwtSecret, {}, async (err, userData) => {
+    jwt.verify(token, JWT_SECRET, {}, async (err, userData) => {
         if (err) throw err;
         const { name, email, _id } = await User.findById(userData.id);
         res.json({ name, email, _id });
@@ -168,7 +169,7 @@ app.post('/places', async (req, res) => {
     const { token } = req.cookies;
     const { title, locationsToVisit, addedPhotos, description, priceToOutput, perks, extraInfo, itinerary } = req.body;
 
-    jwt.verify(token, process.env.jwtSecret, {}, async (err, userData) => {
+    jwt.verify(token, JWT_SECRET, {}, async (err, userData) => {
         if (err) return res.status(403).json({ error: "Invalid token" });
 
         try {
