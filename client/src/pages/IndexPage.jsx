@@ -41,7 +41,7 @@ export default function IndexPage() {
                     </Link>
                 ))
             ) : (
-                <p className="text-center text-gray-500 col-span-3">No places available.</p>
+                <p className="text-center text-gray-500 col-span-3">Loading... please wait !!</p>
             )}
         </div>
     );
